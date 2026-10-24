@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FDE Incident Assistant</title>
+<style>
+:root{--bg:#0b1120;--panel:#111a2b;--panel2:#172338;--border:#25334b;--text:#e5edf8;--muted:#8b9bb4;--blue:#60a5fa;--green:#34d399;--yellow:#fbbf24;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,"Segoe UI",Arial,sans-serif}button,input,select{font:inherit}button{cursor:pointer}.app{display:flex;min-height:100vh}
+.sidebar{width:230px;flex-shrink:0;padding:24px 16px;background:#0e1728;border-right:1px solid var(--border)}.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 28px}.brand-icon{display:grid;place-items:center;width:39px;height:39px;border-radius:11px;background:#1d3b65;color:#93c5fd;font-size:21px;font-weight:700}.brand-name{font-weight:700}.brand-subtitle{margin-top:4px;color:var(--muted);font-size:11px}.nav-label{margin:12px 10px;color:#657690;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}.nav-link{display:block;padding:12px 13px;margin:5px 0;border-radius:8px;color:#aab8cc;text-decoration:none}.nav-link:hover,.nav-link.active{background:#1a2a42;color:#93c5fd}.sidebar-bottom{margin-top:36px;padding:14px 12px;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;line-height:1.7}.sidebar-bottom strong{color:var(--text)}
+.main{flex:1;min-width:0;padding:28px}.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px}.eyebrow{margin-bottom:8px;color:var(--blue);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}h1{margin:0;font-size:clamp(23px,3vw,30px);letter-spacing:-.8px}.subtitle{margin-top:8px;color:var(--muted);line-height:1.6}.top-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.api-status,.button{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:#b7c5d9;font-size:12px}.button.primary{border-color:#315b91;background:#19375c;color:#bfdbfe}.button:hover{filter:brightness(1.15)}.button:disabled{opacity:.6;cursor:wait}.status-dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}.status-dot.online{background:var(--green)}.status-dot.offline{background:var(--red)}
+.section-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:28px 0 16px}.section-heading h2{margin:0;font-size:17px}.section-description{margin-top:6px;color:var(--muted);font-size:12px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric-card,.panel{min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:12px}.metric-card{padding:18px}.metric-top{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px}.metric-symbol{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--panel2)}.metric-value{margin-top:15px;font-size:29px;font-weight:700;letter-spacing:-1px}.metric-note{margin-top:8px;color:var(--muted);font-size:11px}.high{color:var(--red)}.medium{color:var(--yellow)}.low{color:var(--green)}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,1fr);gap:17px;align-items:start}.panel{padding:19px}.panel-title{margin:0;font-size:15px}.panel-subtitle{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.5}.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px}.filter-bar{display:flex;gap:6px;flex-wrap:wrap}.filter-button{padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#121e31;color:#aab8cc;font-size:11px}.filter-button.active{border-color:#3869a5;background:#1d3b62;color:#bfdbfe}.search-row{display:flex;align-items:center;gap:9px;margin:14px 0;padding:0 11px;min-height:43px;border:1px solid var(--border);border-radius:9px;background:#0e1728}.search-row:focus-within{border-color:#3b82f6}.search-row input{flex:1;min-width:0;padding:11px 0;border:0;outline:0;background:transparent;color:var(--text)}.search-row input::placeholder{color:#71829d}.clear-search{border:1px solid var(--border);border-radius:6px;padding:6px 9px;background:var(--panel2);color:#b7c5d9}.clear-search[hidden]{display:none}.incident-count{padding:5px 9px;border:1px solid var(--border);border-radius:20px;color:#aab8cc;font-size:11px}
+#log-list{display:grid;gap:10px}.log-card{padding:14px;border:1px solid #2c3b53;border-radius:9px;background:#121e31}.log-card:focus-visible{outline:2px solid var(--blue)}.log-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.log-message{margin:0;font-size:13px;line-height:1.6;overflow-wrap:anywhere}.log-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;color:var(--muted);font-size:11px}.level-badge{flex-shrink:0;padding:5px 8px;border:1px solid #34445e;border-radius:6px;background:#1a2a42;color:#bfdbfe;font-size:10px;font-weight:700}.level-ERROR{border-color:#783747;background:#3a1c2a;color:#fda4af}.level-WARNING{border-color:#765b23;background:#3b2d12;color:#fcd34d}.level-INFO{border-color:#315b91;background:#19375c;color:#bfdbfe}.level-MALFORMED{border-color:#805c36;background:#392719;color:#fdba74}.recommendation{margin-top:12px;padding:11px;border-left:3px solid #4d8edb;border-radius:0 6px 6px 0;background:#17273d}.recommendation-label{margin-bottom:5px;color:#93c5fd;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}.recommendation p{margin:0;color:#bdc9da;font-size:12px;line-height:1.7}.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.small-button{padding:7px 10px;border:1px solid #315b91;border-radius:7px;background:#19375c;color:#bfdbfe;font-size:11px}.empty-state{padding:25px 14px;border:1px dashed #34445e;border-radius:9px;color:var(--muted);text-align:center;line-height:1.7}.distribution-row{margin-top:22px}.distribution-top{display:flex;justify-content:space-between;margin-bottom:8px;color:#c6d2e2;font-size:12px}.progress-track{height:7px;overflow:hidden;border-radius:20px;background:#243147}.progress-fill{height:100%;width:0;border-radius:20px;transition:width .25s}.info-fill{background:#60a5fa}.warning-fill{background:#fbbf24}.error-fill{background:#fb7185}.quality-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:17px}.quality-item{padding:13px;border:1px solid var(--border);border-radius:9px;background:#121e31}.quality-label{color:var(--muted);font-size:11px}.quality-value{margin-top:9px;font-size:22px;font-weight:700}.updated{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);color:var(--muted);font-size:11px;line-height:1.7}.upload-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.upload-row input{max-width:100%;min-width:0;color:var(--muted);font-size:11px}.auto-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;color:var(--muted);font-size:12px}.auto-row select{padding:7px;border:1px solid var(--border);border-radius:7px;background:#0e1728;color:var(--text)}.footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--border);color:#657690;font-size:11px;line-height:1.7}
+.modal[hidden]{display:none}.modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px}.backdrop{position:absolute;inset:0;background:#020612d9;backdrop-filter:blur(4px)}.modal-content{position:relative;width:100%;max-width:650px;max-height:88vh;overflow-y:auto;padding:23px;border:1px solid #2c3b53;border-radius:14px;background:#111a2b;box-shadow:0 24px 80px #0008}.detail-header{display:flex;justify-content:space-between;gap:14px;margin-bottom:22px}.detail-header h2{margin:0;font-size:22px}.close-button{width:36px;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text)}.detail-section{margin-top:19px}.detail-label{color:#93a5bd;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}.detail-value{margin:8px 0 0;color:var(--text);font-size:13px;line-height:1.8;overflow-wrap:anywhere}.context-list{display:grid;gap:7px;margin-top:9px}.context-line{padding:9px;border:1px solid var(--border);border-radius:7px;background:#0e1728;color:#b9c7da;font-size:11px;line-height:1.6;overflow-wrap:anywhere}.detail-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:10px}.detail-stat{padding:12px;border:1px solid var(--border);border-radius:8px;background:#121e31}.detail-stat span{display:block;color:var(--muted);font-size:11px}.detail-stat strong{display:block;margin-top:8px;font-size:22px}.toast{position:fixed;right:20px;bottom:20px;z-index:1200;max-width:360px;padding:13px 16px;border:1px solid #315b91;border-radius:9px;background:#17273d;color:#dbeafe;box-shadow:0 10px 35px #0005}.toast[hidden]{display:none}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.app{display:block}.sidebar{width:100%;padding:14px;border-right:0;border-bottom:1px solid var(--border)}.brand{padding-bottom:14px}.nav-label,.sidebar-bottom{display:none}.nav-links{display:flex;flex-wrap:wrap;gap:5px}.nav-link{padding:9px;margin:0;font-size:12px}.main{padding:19px 13px}.metric-card,.panel{padding:14px}.metric-value{font-size:25px}}
+@media(max-width:460px){.metrics{gap:8px}.metric-card{padding:12px}.metric-top{font-size:11px}.detail-summary{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-icon">F</div><div><div class="brand-name">FDE Assistant</div><div class="brand-subtitle">Incident Operations</div></div></div>
+  <div class="nav-label">Workspace</div>
+  <nav class="nav-links">
+    <a class="nav-link active" href="#overview">Overview</a>
+    <a class="nav-link" href="#incidents">Incidents & Logs</a>
+    <a class="nav-link" href="#log-quality">Log Quality</a>
+  </nav>
+  <div class="sidebar-bottom"><strong>Local environment</strong><br>FastAPI · Python log analyzer<br><span id="sidebar-status">Connecting...</span></div>
+</aside>
+
+<main class="main">
+<header class="topbar" id="overview">
+  <div><div class="eyebrow">Operations dashboard</div><h1>Incident Overview</h1><div class="subtitle">Analyze logs, investigate failures, and export incident reports.</div></div>
+  <div class="top-actions">
+    <div class="api-status"><span class="status-dot" id="api-dot"></span><span id="api-status">Connecting...</span></div>
+    <button class="button primary" id="refresh-button" onclick="loadReport()">↻ Refresh</button>
+    <button class="button" onclick="exportReport('json')">Export JSON</button>
+    <button class="button" onclick="exportReport('csv')">Export CSV</button>
+  </div>
+</header>
+
+<section>
+  <div class="section-heading"><div><h2>Current Snapshot</h2><div class="section-description">Counts update when the report is refreshed or logs are uploaded.</div></div></div>
+  <div class="metrics">
+    <article class="metric-card"><div class="metric-top">Incident Severity <span class="metric-symbol">◈</span></div><div class="metric-value low" id="severity">—</div><div class="metric-note">Based on errors and warnings</div></article>
+    <article class="metric-card"><div class="metric-top">Valid Logs <span class="metric-symbol">▤</span></div><div class="metric-value" id="total">—</div><div class="metric-note">Recognized entries</div></article>
+    <article class="metric-card"><div class="metric-top">Errors <span class="metric-symbol">!</span></div><div class="metric-value high" id="errors">—</div><div class="metric-note">Require investigation</div></article>
+    <article class="metric-card"><div class="metric-top">Warnings <span class="metric-symbol">△</span></div><div class="metric-value medium" id="warnings">—</div><div class="metric-note">Potential issues</div></article>
+  </div>
+</section>
+
+<section id="incidents">
+<div class="section-heading"><div><h2>Incident & Log Explorer</h2><div class="section-description">Search messages, filter all log levels, and inspect surrounding context.</div></div><span class="incident-count" id="result-count">0 entries</span></div>
+<div class="content-grid">
+<section class="panel">
+  <h3 class="panel-title">Log Entries</h3><div class="panel-subtitle">All valid and malformed entries returned by the API.</div>
+  <div class="toolbar">
+    <div class="filter-bar" role="group" aria-label="Log level filter">
+      <button class="filter-button active" data-filter="ALL" onclick="setFilter('ALL')">All</button>
+      <button class="filter-button" data-filter="ERROR" onclick="setFilter('ERROR')">Errors</button>
+      <button class="filter-button" data-filter="WARNING" onclick="setFilter('WARNING')">Warnings</button>
+      <button class="filter-button" data-filter="INFO" onclick="setFilter('INFO')">INFO</button>
+      <button class="filter-button" data-filter="MALFORMED" onclick="setFilter('MALFORMED')">Malformed</button>
+    </div>
+  </div>
+  <div class="search-row"><span class="search-icon">⌕</span><input id="search-input" type="search" placeholder="Search message, timestamp, level, or recommendation..." aria-label="Search logs" autocomplete="off"><button class="clear-search" id="clear-search" onclick="clearSearch()" hidden>Clear</button></div>
+  <div id="log-list" aria-live="polite"><div class="empty-state">Loading log data...</div></div>
+</section>
+
+<div>
+<section class="panel">
+  <h3 class="panel-title">Log Distribution</h3><div class="panel-subtitle">Distribution of recognized log levels.</div>
+  <div class="distribution-row"><div class="distribution-top"><span>INFO</span><span id="info-count">0</span></div><div class="progress-track"><div class="progress-fill info-fill" id="info-bar"></div></div></div>
+  <div class="distribution-row"><div class="distribution-top"><span>WARNING</span><span id="warning-count">0</span></div><div class="progress-track"><div class="progress-fill warning-fill" id="warning-bar"></div></div></div>
+  <div class="distribution-row"><div class="distribution-top"><span>ERROR</span><span id="error-count">0</span></div><div class="progress-track"><div class="progress-fill error-fill" id="error-bar"></div></div></div>
+</section>
+<section class="panel" id="log-quality" style="margin-top:17px">
+  <h3 class="panel-title">Log Quality</h3><div class="panel-subtitle">Input validation and data freshness.</div>
+  <div class="quality-grid"><div class="quality-item"><div class="quality-label">Valid entries</div><div class="quality-value" id="valid-count">—</div></div><div class="quality-item"><div class="quality-label">Malformed entries</div><div class="quality-value" id="malformed-count">—</div></div></div>
+  <div class="updated">Active file: <strong id="source-file">—</strong><br>Last successful update: <strong id="updated">Waiting for API</strong></div>
+  <div class="auto-row"><label><input type="checkbox" id="auto-refresh"> Enable auto-refresh</label><label for="refresh-interval">Interval</label><select id="refresh-interval"><option value="15">15 sec</option><option value="30" selected>30 sec</option><option value="60">60 sec</option></select></div>
+  <div class="upload-row"><input type="file" id="log-file" accept=".txt,text/plain" aria-label="Choose a text log file"><button class="button primary" id="upload-button" onclick="uploadLogs()">Upload logs</button><button class="button" onclick="resetLogs()">Restore sample logs</button></div>
+  <div class="panel-subtitle">UTF-8 text files up to 2 MB. Expected format: YYYY-MM-DD HH:MM:SS LEVEL message.</div>
+</section>
+</div>
+</div>
+</section>
+<footer class="footer">FDE Incident Assistant · Local development project<br>Recommendations are rule-based investigative guidance. Review changes before taking operational action.</footer>
+</main>
+</div>
+
+<div class="modal" id="details-modal" hidden>
+  <div class="backdrop" onclick="closeDetails()"></div>
+  <section class="modal-content" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <div class="detail-header"><div><div class="eyebrow">Incident investigation</div><h2 id="detail-title">Log Details</h2></div><button class="close-button" onclick="closeDetails()" aria-label="Close details">✕</button></div>
+    <div class="detail-section"><div class="detail-label">Level / timestamp / line</div><p class="detail-value" id="detail-meta"></p></div>
+    <div class="detail-section"><div class="detail-label">Log message</div><p class="detail-value" id="detail-message"></p></div>
+    <div class="detail-section"><div class="detail-label">Recommended investigation</div><p class="detail-value" id="detail-recommendation"></p></div>
+    <div class="detail-section"><div class="detail-label">Previous log context</div><div class="context-list" id="context-before"></div></div>
+    <div class="detail-section"><div class="detail-label">Following log context</div><div class="context-list" id="context-after"></div></div>
+    <div class="detail-section"><div class="detail-label">Incident summary</div><div class="detail-summary"><div class="detail-stat"><span>Total valid logs</span><strong id="detail-total">—</strong></div><div class="detail-stat"><span>Errors</span><strong id="detail-errors">—</strong></div><div class="detail-stat"><span>Warnings</span><strong id="detail-warnings">—</strong></div></div></div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+let reportData = null;
+let logItems = [];
+let activeFilter = "ALL";
+let searchTerm = "";
+let refreshTimer = null;
+let toastTimer = null;
+
+const $ = id => document.getElementById(id);
+
+function showToast(message) {
+  const toast = $("toast");
+  toast.textContent = message;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 4000);
+}
+
+function setApiStatus(online, message) {
+  $("api-dot").classList.toggle("online", online);
+  $("api-dot").classList.toggle("offline", !online);
+  $("api-status").textContent = message;
+  $("sidebar-status").textContent = online ? "API connected" : "API unavailable";
+}
+
+function setFilter(level) {
+  activeFilter = level;
+  document.querySelectorAll(".filter-button").forEach(button => {
+    const active = button.dataset.filter === level;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  renderLogs();
+}
+
+function clearSearch() {
+  $("search-input").value = "";
+  searchTerm = "";
+  renderLogs();
+  $("search-input").focus();
+}
+
+$("search-input").addEventListener("input", event => {
+  searchTerm = event.target.value;
+  renderLogs();
+});
+
+function addContextLines(container, lines, emptyMessage) {
+  container.replaceChildren();
+  if (!lines || lines.length === 0) {
+    const item = document.createElement("div");
+    item.className = "context-line";
+    item.textContent = emptyMessage;
+    container.appendChild(item);
+    return;
+  }
+  lines.forEach(line => {
+    const item = document.createElement("div");
+    item.className = "context-line";
+    item.textContent = line;
+    container.appendChild(item);
+  });
+}
+
+function openDetails(item) {
+  const summary = reportData?.summary || {};
+  $("detail-title").textContent = `${item.level} · Log entry #${item.line_number}`;
+  $("detail-meta").textContent =
+    `${item.timestamp || "Timestamp unavailable"} · Line ${item.line_number} · ${item.valid ? "Valid entry" : "Malformed entry"}`;
+  $("detail-message").textContent = item.message || "(No message)";
+  $("detail-recommendation").textContent =
+    item.recommendation || "No additional recommendation.";
+  $("detail-total").textContent = summary.total_logs ?? 0;
+  $("detail-errors").textContent = summary.error_count ?? 0;
+  $("detail-warnings").textContent = summary.warning_count ?? 0;
+  addContextLines($("context-before"), item.context_before, "No previous log lines.");
+  addContextLines($("context-after"), item.context_after, "No following log lines.");
+  $("details-modal").hidden = false;
+  document.querySelector(".close-button").focus();
+}
+
+function closeDetails() { $("details-modal").hidden = true; }
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !$("details-modal").hidden) closeDetails();
+});
+
+function renderLogs() {
+  const list = $("log-list");
+  const term = searchTerm.trim().toLowerCase();
+  $("clear-search").hidden = !term;
+  list.replaceChildren();
+
+  const filtered = logItems.filter(item => {
+    const filterMatch = activeFilter === "ALL" || item.level === activeFilter;
+    const haystack = [
+      item.timestamp || "", item.level || "", item.message || "",
+      item.recommendation || "", String(item.line_number || "")
+    ].join(" ").toLowerCase();
+    return filterMatch && haystack.includes(term);
+  });
+
+  $("result-count").textContent = `${filtered.length} entr${filtered.length === 1 ? "y" : "ies"}`;
+
+  if (!filtered.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = term
+      ? `No logs match "${$("search-input").value.trim()}". Try another keyword or clear the search.`
+      : "No log entries match this filter.";
+    list.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "log-card";
+
+    const top = document.createElement("div");
+    top.className = "log-top";
+    const left = document.createElement("div");
+    left.style.minWidth = "0";
+
+    const meta = document.createElement("div");
+    meta.className = "log-meta";
+    meta.textContent = `${item.timestamp || "Invalid timestamp"} · Line ${item.line_number}`;
+
+    const message = document.createElement("h4");
+    message.className = "log-message";
+    message.textContent = item.message || "(No message)";
+
+    left.append(meta, message);
+    const badge = document.createElement("span");
+    badge.className = `level-badge level-${item.level}`;
+    badge.textContent = item.level;
+    top.append(left, badge);
+    card.appendChild(top);
+
+    if (item.level === "ERROR" || item.level === "WARNING" || item.level === "MALFORMED") {
+      const recommendation = document.createElement("div");
+      recommendation.className = "recommendation";
+      const label = document.createElement("div");
+      label.className = "recommendation-label";
+      label.textContent = "Recommended investigation";
+      const text = document.createElement("p");
+      text.textContent = item.recommendation || "Review related application logs.";
+      recommendation.append(label, text);
+      card.appendChild(recommendation);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+    const details = document.createElement("button");
+    details.className = "small-button";
+    details.textContent = "View details and context →";
+    details.addEventListener("click", () => openDetails(item));
+    actions.appendChild(details);
+    card.appendChild(actions);
+    list.appendChild(card);
+  });
+}
+
+function updateMetrics(data) {
+  const s = data.summary || {};
+  $("severity").textContent = data.severity || "UNKNOWN";
+  $("severity").className = "metric-value " +
+    (data.severity === "HIGH" ? "high" : data.severity === "MEDIUM" ? "medium" : "low");
+  $("total").textContent = s.total_logs ?? 0;
+  $("errors").textContent = s.error_count ?? 0;
+  $("warnings").textContent = s.warning_count ?? 0;
+  $("info-count").textContent = s.info_count ?? 0;
+  $("warning-count").textContent = s.warning_count ?? 0;
+  $("error-count").textContent = s.error_count ?? 0;
+  $("valid-count").textContent = s.total_logs ?? 0;
+  $("malformed-count").textContent = s.malformed_count ?? 0;
+  $("source-file").textContent = data.source_file || "Unknown";
+
+  const total = Number(s.total_logs) || 0;
+  [["info-bar", s.info_count], ["warning-bar", s.warning_count], ["error-bar", s.error_count]]
+    .forEach(([id, count]) => {
+      $(id).style.width = `${total ? Math.min(100, (Number(count || 0) / total) * 100) : 0}%`;
+    });
+}
+
+async function loadReport() {
+  const button = $("refresh-button");
+  button.disabled = true;
+  button.textContent = "Loading...";
+  try {
+    const response = await fetch("/incident", { cache: "no-store" });
+    if (!response.ok) throw new Error(`API returned HTTP ${response.status}`);
+    reportData = await response.json();
+    logItems = Array.isArray(reportData.logs) ? reportData.logs : [];
+    updateMetrics(reportData);
+    renderLogs();
+    $("updated").textContent = new Date().toLocaleString();
+    setApiStatus(true, "API Connected");
+  } catch (error) {
+    setApiStatus(false, "API unavailable");
+    $("log-list").replaceChildren();
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = `Could not load incident data: ${error.message}. Check that FastAPI is running.`;
+    $("log-list").appendChild(empty);
+  } finally {
+    button.disabled = false;
+    button.textContent = "↻ Refresh";
+  }
+}
+
+function configureAutoRefresh() {
+  clearInterval(refreshTimer);
+  refreshTimer = null;
+  if ($("auto-refresh").checked) {
+    refreshTimer = setInterval(loadReport, Number($("refresh-interval").value) * 1000);
+  }
+}
+$("auto-refresh").addEventListener("change", configureAutoRefresh);
+$("refresh-interval").addEventListener("change", configureAutoRefresh);
+
+async function uploadLogs() {
+  const file = $("log-file").files[0];
+  if (!file) { showToast("Choose a .txt log file first."); return; }
+  if (file.size > 2 * 1024 * 1024) { showToast("File exceeds the 2 MB limit."); return; }
+  const button = $("upload-button");
+  button.disabled = true;
+  try {
+    const content = await file.text();
+    const response = await fetch("/upload", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+      body: content
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Upload failed");
+    await loadReport();
+    $("log-file").value = "";
+    showToast("Log file uploaded and analyzed.");
+  } catch (error) {
+    showToast(`Upload failed: ${error.message}`);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function resetLogs() {
+  try {
+    const response = await fetch("/reset-logs", { method: "POST" });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Could not restore sample logs");
+    await loadReport();
+    showToast("Sample logs restored.");
+  } catch (error) {
+    showToast(`Reset failed: ${error.message}`);
+  }
+}
+
+function exportReport(format) {
+  window.location.href = `/export?format=${encodeURIComponent(format)}`;
+}
+
+loadReport();
+</script>
+</body>
+</html>

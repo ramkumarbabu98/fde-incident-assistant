@@ -1,0 +1,6 @@
+2026-10-21 09:00:01 INFO Server started
+2026-10-21 09:00:05 INFO User login successful
+2026-10-21 09:00:10 ERROR Database connection failed
+2026-10-21 09:00:12 WARNING Response time exceeded threshold
+2026-10-21 09:00:15 ERROR Payment service unavailable
+2026-10-21 09:00:17 INFO Health check completed
